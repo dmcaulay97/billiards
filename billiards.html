@@ -1,0 +1,91 @@
+<head>
+    <title>Billiards</title>
+
+    <meta description="Your Description" />
+    <meta publisher="Dylan McAulay" />
+    <meta property="bgColor" label="Background Color" type="color" min="0" max="360" default="#001919" />
+</head>
+
+<body style="margin: 0; padding: 0;">
+    <canvas id="exCanvas" width="320" height="200"></canvas>
+</body>
+
+<script>
+    var canvas = document.getElementById("exCanvas");
+    var ctx = canvas.getContext("2d");
+    var width = 320;
+    var height = 200;
+
+    const getRandomInt = (min, max) => {
+        min = Math.ceil(min);
+        max = Math.floor(max);
+        return Math.floor(Math.random() * (max - min) + min); //The maximum is exclusive and the minimum is inclusive
+    }
+
+    class Circle {
+        constructor(x, y, size, dx, dy, color) {
+            this.x = x;
+            this.y = y;
+            this.size = size;
+            this.dx = dx;
+            this.dy = dy;
+            this.color = color;
+        }
+    }
+
+    const createCircles = (num) => {
+        const colors = ["green", "blue", "red"];
+        const negative = [1, -1];
+        let array = [];
+        for (let i = 0; i < num; i++) {
+            const size = getRandomInt(10, 20);
+            const x = getRandomInt(size, width - size);
+            const y = getRandomInt(size, height - size);
+            const dx = getRandomInt(1, 3) * negative[getRandomInt(0, 2)];
+            const dy = getRandomInt(1, 3) * negative[getRandomInt(0, 2)];
+            const color = colors[getRandomInt(0, 3)]
+
+
+            array.push(new Circle(x, y, size, dx, dy, color));
+        }
+        return array;
+    }
+
+    let circleArray = createCircles(10);
+
+    const drawCircle = (circle) => {
+        ctx.beginPath();
+        ctx.arc(circle.x, circle.y, circle.size, 0, Math.PI * 2);
+        ctx.fillStyle = circle.color;
+        ctx.fill();
+    }
+
+    const collisionCheck = (circle) => {
+        if (circle.x + circle.size > width || circle.x - circle.size < 0) {
+            circle.dx *= -1;
+        }
+
+        if (circle.y + circle.size > height || circle.y - circle.size < 0) {
+            circle.dy *= -1;
+        }
+
+        circle.x += circle.dx;
+        circle.y += circle.dy;
+    }
+
+    const update = () => {
+        // console.log(bgColor);
+        ctx.fillStyle = "yellow"
+        ctx.fillRect(0, 0, width, height);
+        circleArray.map(e => {
+            drawCircle(e);
+        })
+        circleArray.map(e => {
+            collisionCheck(e);
+        })
+
+        requestAnimationFrame(update)
+    }
+
+    update()
+</script>
