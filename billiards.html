@@ -14,17 +14,20 @@
 </body>
 
 <script>
+    //Establish canvas context and esablish width and height as varibles
     var canvas = document.getElementById("exCanvas");
     var ctx = canvas.getContext("2d");
     var width = 320;
     var height = 200;
 
+    //Random Int function which will aid in the random positioning and random trejectory of the circles.
     const getRandomInt = (min, max) => {
         min = Math.ceil(min);
         max = Math.floor(max);
         return Math.floor(Math.random() * (max - min) + min);
     }
 
+    //The circle class will be used to quickly create animated balls. The class contains all information needed to animate a ball
     class Circle {
         constructor(x, y, size, dx, dy, color) {
             this.x = x;
@@ -35,8 +38,11 @@
             this.color = color;
         }
     }
+
+    //The negative array aids in the creation of negative and positive non-zero dx and dy values for the balls
     const negative = [1, -1];
 
+    //The createCircles function creats the initial array of circle objects that the program will animate.
     const createCircles = (num) => {
 
         let array = [];
@@ -53,8 +59,11 @@
         }
         return array;
     }
+
+    //The circle Array contains cirlce objects which will be animated each frame.
     let circleArray = createCircles(5);
 
+    //The draw Cirle function handles the animation a a circle object on each frame of animation.
     const drawCircle = (circle) => {
         ctx.beginPath();
         ctx.arc(circle.x, circle.y, circle.size, 0, Math.PI * 2);
@@ -62,6 +71,7 @@
         ctx.fill();
     }
 
+    // The wall collision check reverses a circle's speed in the x or y direction when it hits the edge of the canvas.
     const wallCollisionCheck = (circle) => {
         if (circle.x + circle.size > width) {
             if (circle.dx > 0) {
@@ -107,14 +117,18 @@
     // }
 
 
-
+    //The update function handles what takes palce on each frame of animation.
     const update = (colorChange, sizeChange, numberChange) => {
+        //first the current controllable values are stored as variables.
         let currentBallSize = ballSize;
         let currentBallColor = ballColor;
         let currentBallNumber = ballNumber;
+
+        //The background of the canvas is filled with the current background color selected by the user.
         ctx.fillStyle = bgColor
         ctx.fillRect(0, 0, width, height);
-        //BALL NUMBER -----------------------------------------------------------------------------
+
+        //The current nmber of circle selected on the slider is compared to the number of circle in the last frame of animation. If these are differnent, the circleArray is added to or subtracted from accordingly.
         if (numberChange != ballNumber) {
             const diff = circleArray.length - ballNumber;
             if (diff < 0) {
@@ -128,7 +142,8 @@
 
             }
         }
-        //-----------------------------------------------------------------------------------------
+
+        //The circles in the circle array are drawn on the canvas and each circle goes through a collision check.
         circleArray.map(e => {
             drawCircle(e);
         })
@@ -136,12 +151,14 @@
             wallCollisionCheck(e);
         })
 
+        //In the same way that the number of circles was checked, we also check for changesin circle color and size;
         if (colorChange != ballColor || sizeChange != ballSize) {
             circleArray.map(e => {
                 e.color = ballColor
                 e.size = ballSize * 2;
             })
         }
+        //The update function is called recursivly so the animation continues to run.
         requestAnimationFrame(() => update(currentBallColor, currentBallSize, currentBallNumber))
     }
 
