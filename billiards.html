@@ -3,7 +3,10 @@
 
     <meta description="Your Description" />
     <meta publisher="Dylan McAulay" />
-    <meta property="bgColor" label="Background Color" type="color" min="0" max="360" default="#001919" />
+    <meta property="bgColor" label="Background Color" type="color" min="0" max="360" default="0b4cff" />
+    <meta property="ballColor" label="Ball Color" type="color" min="0" max="360" default="fa0000" />
+    <meta property="ballSize" label="Ball Size" type="number" default="5" min="1" max="10">
+    <meta property="ballNumber" label="Number of Balls" type="number" default="5" min="1" max="10">
 </head>
 
 <body style="margin: 0; padding: 0;">
@@ -19,7 +22,7 @@
     const getRandomInt = (min, max) => {
         min = Math.ceil(min);
         max = Math.floor(max);
-        return Math.floor(Math.random() * (max - min) + min); //The maximum is exclusive and the minimum is inclusive
+        return Math.floor(Math.random() * (max - min) + min);
     }
 
     class Circle {
@@ -32,26 +35,25 @@
             this.color = color;
         }
     }
+    const negative = [1, -1];
 
     const createCircles = (num) => {
-        const colors = ["green", "blue", "red"];
-        const negative = [1, -1];
+
         let array = [];
         for (let i = 0; i < num; i++) {
-            const size = getRandomInt(10, 20);
+            const size = 10
             const x = getRandomInt(size, width - size);
             const y = getRandomInt(size, height - size);
             const dx = getRandomInt(1, 3) * negative[getRandomInt(0, 2)];
             const dy = getRandomInt(1, 3) * negative[getRandomInt(0, 2)];
-            const color = colors[getRandomInt(0, 3)]
+            const color = ""
 
 
             array.push(new Circle(x, y, size, dx, dy, color));
         }
         return array;
     }
-
-    let circleArray = createCircles(10);
+    let circleArray = createCircles(5);
 
     const drawCircle = (circle) => {
         ctx.beginPath();
@@ -60,32 +62,88 @@
         ctx.fill();
     }
 
-    const collisionCheck = (circle) => {
-        if (circle.x + circle.size > width || circle.x - circle.size < 0) {
-            circle.dx *= -1;
+    const wallCollisionCheck = (circle) => {
+        if (circle.x + circle.size > width) {
+            if (circle.dx > 0) {
+                circle.dx *= -1;
+            }
+        } else if (circle.x - circle.size < 0) {
+            if (circle.dx < 0) {
+                circle.dx *= -1;
+            }
         }
 
-        if (circle.y + circle.size > height || circle.y - circle.size < 0) {
-            circle.dy *= -1;
+        if (circle.y + circle.size > height) {
+            if (circle.dy > 0) {
+                circle.dy *= -1;
+            }
+        } else if (circle.y - circle.size < 0) {
+            if (circle.dy < 0) {
+                circle.dy *= -1;
+            }
         }
 
         circle.x += circle.dx;
         circle.y += circle.dy;
     }
 
-    const update = () => {
-        // console.log(bgColor);
-        ctx.fillStyle = "yellow"
+    //BALL Collision Function -- need to build model of 2d collisions
+    // const ballCollisionCheck = () => {
+    //     for (let i = 0; i < circleArray.length - 1; i++) {
+    //         for (let j = i + 1; j < circleArray.length; j++) {
+    //             const circ1 = circleArray[i];
+    //             const circ2 = circleArray[j];
+    //             const a = circ1.x - circ2.x;
+    //             const b = circ1.y - circ2.y;
+    //             const dist = Math.sqrt(a * a + b * b)
+    //             if (dist < circ1.size + circ2.size) {
+    //                 circ1.dx *= -1
+    //                 circ1.dy *= -1
+    //                 circ2.dx *= -1
+    //                 circ2.dy *= -1
+    //             }
+    //         }
+    //     }
+    // }
+
+
+
+    const update = (colorChange, sizeChange, numberChange) => {
+        let currentBallSize = ballSize;
+        let currentBallColor = ballColor;
+        let currentBallNumber = ballNumber;
+        ctx.fillStyle = bgColor
         ctx.fillRect(0, 0, width, height);
+        //BALL NUMBER -----------------------------------------------------------------------------
+        if (numberChange != ballNumber) {
+            const diff = circleArray.length - ballNumber;
+            if (diff < 0) {
+                for (let i = 0; i < diff * -1; i++) {
+                    circleArray.push(new Circle(getRandomInt(ballSize * 2, width - ballSize * 2), getRandomInt(ballSize * 2, height - ballSize * 2), ballSize * 2, getRandomInt(1, 3) * negative[getRandomInt(0, 2)], getRandomInt(1, 3) * negative[getRandomInt(0, 2)], ballColor))
+                }
+            } else {
+                for (let i = 0; i < diff; i++) {
+                    circleArray.pop()
+                }
+
+            }
+        }
+        //-----------------------------------------------------------------------------------------
         circleArray.map(e => {
             drawCircle(e);
         })
         circleArray.map(e => {
-            collisionCheck(e);
+            wallCollisionCheck(e);
         })
 
-        requestAnimationFrame(update)
+        if (colorChange != ballColor || sizeChange != ballSize) {
+            circleArray.map(e => {
+                e.color = ballColor
+                e.size = ballSize * 2;
+            })
+        }
+        requestAnimationFrame(() => update(currentBallColor, currentBallSize, currentBallNumber))
     }
 
-    update()
+    requestAnimationFrame(update);
 </script>
